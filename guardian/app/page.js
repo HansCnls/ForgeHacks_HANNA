@@ -34,7 +34,8 @@ export default function Home() {
       const datos = await res.json();
       setResultado(datos);
       setEstado(res.ok ? "listo" : "error");
-    } catch {
+    } catch (err) {
+      setResultado({ error: String(err) });
       setEstado("error");
     }
   }
@@ -61,9 +62,14 @@ export default function Home() {
       )}
 
       {estado === "error" && (
-        <p className="text-2xl text-center text-red-700">
-          No pude revisarlo. Inténtalo de nuevo.
-        </p>
+        <div className="text-center">
+          <p className="text-2xl text-red-700">
+            No pude revisarlo. Inténtalo de nuevo.
+          </p>
+          <p className="mt-2 text-base text-slate-500">
+            {resultado?.error}
+          </p>
+        </div>
       )}
 
       {(estado === "listo" || estado === "error") && (
