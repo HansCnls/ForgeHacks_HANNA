@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 
 const MODEL = process.argv[2] || "L";
-const imagen = readFileSync("captura.png").toString("base64");
+const imagen = readFileSync("captura5.png").toString("base64");
 
 const instruccion = `Eres un lector de capturas de pantalla. Transcribe, no interpretes.
 Devuelve SOLO un objeto JSON, sin texto antes ni después, con estas claves:
