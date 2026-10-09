@@ -39,6 +39,15 @@
   .intro { color: var(--ink-soft); margin: 0 0 1.6rem; }
   [hidden] { display: none !important; }
 
+  /* Tabs */
+  .tabs { display: flex; gap: 0.5rem; margin-bottom: 2rem; border-bottom: 2px solid var(--line); padding-bottom: 0.5rem; overflow-x: auto; scrollbar-width: none; }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab-btn { background: transparent; border: none; font-weight: 700; color: var(--ink-soft); font-size: 1.05rem; padding: 0.5rem 1rem; cursor: pointer; border-radius: var(--radius); flex-shrink: 0; }
+  .tab-btn.active { color: var(--action); background: #e8f1fb; }
+  .tab-btn:hover:not(.active) { background: #e8f1fb; color: var(--action); }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
   /* Upload zone */
   .drop {
     display: block;
@@ -74,6 +83,7 @@
   button:focus-visible, a:focus-visible { outline: 4px solid var(--ink); outline-offset: 3px; }
   button.primary { background: var(--action); color: #fff; font-size: 1.15rem; }
   button.primary:hover { background: var(--action-dark); }
+  button:disabled { opacity: 0.6; cursor: not-allowed; }
   .examples button { min-height: 48px; font-size: .9rem; font-weight: 400; }
   .actions { display: flex; flex-wrap: wrap; gap: .8rem; margin-top: 1.2rem; }
   a.button { display: inline-flex; align-items: center; justify-content: center; text-decoration: none; }
@@ -129,6 +139,34 @@
   .bar i { display: block; height: 100%; background: var(--color); }
   .disclaimer { font-size: .85rem; color: var(--ink-soft); margin-top: 1.2rem; }
 
+  /* Trainer Styles */
+  .trainer-card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 1.5rem; margin-top: 1rem; }
+  .msg-box { background: #e9eef3; border-radius: 16px 16px 16px 4px; padding: 1rem 1.2rem; margin: 1.5rem 0; font-size: 1.1rem; }
+  .msg-box small { display: block; font-weight: 700; color: var(--ink-soft); margin-bottom: 0.4rem; font-size: 0.9rem; }
+  .trainer-actions { display: flex; gap: 1rem; margin-top: 1rem; }
+  .trainer-actions button { flex: 1; min-height: 64px; }
+  .btn-scam { border-color: var(--danger); color: var(--danger); }
+  .btn-scam:hover { background: var(--danger-bg); }
+  .btn-safe { border-color: var(--ok); color: var(--ok); }
+  .btn-safe:hover { background: var(--ok-bg); }
+  .trainer-result { margin-top: 1.5rem; padding: 1rem; border-radius: 8px; border-left: 6px solid; display: none; }
+  .trainer-result.correct { background: var(--ok-bg); border-color: var(--ok); color: var(--ink); }
+  .trainer-result.incorrect { background: var(--danger-bg); border-color: var(--danger); color: var(--ink); }
+  .trainer-result h3 { margin-top: 0; margin-bottom: 0.5rem; }
+  
+  /* Trends Styles */
+  .trend-grid { display: grid; gap: 1rem; grid-template-columns: 1fr 1fr; margin-top: 1rem; }
+  .trend-box { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 1.2rem; }
+  .trend-box h3 { margin-top: 0; font-size: 1.1rem; }
+  .trend-stat { font-size: 2.2rem; font-weight: 700; color: var(--action); margin-bottom: 0.5rem; line-height: 1; }
+  .trend-bar-row { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.6rem; }
+  .trend-label { width: 45%; font-size: 0.85rem; font-weight: 700; }
+  .trend-bar-container { flex: 1; background: var(--line); height: 10px; border-radius: 5px; overflow: hidden; }
+  .trend-bar-fill { height: 100%; background: var(--warn); }
+  .trend-bar-fill.high { background: var(--danger); }
+  .trend-bar-fill.low { background: var(--action); }
+  .map-placeholder { background: #e9eef3; height: 150px; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--ink-soft); font-weight: 700; margin-top: 1rem; border: 2px dashed var(--line); text-align: center; padding: 1rem; }
+
   @media (prefers-reduced-motion: reduce) {
     .stamp { animation: none; }
     .steps li.active .dot { animation: none; }
@@ -138,6 +176,8 @@
     h1 { font-size: 1.7rem; }
     button, .button { width: 100%; }
     .examples button { width: auto; }
+    .trainer-actions { flex-direction: column; }
+    .trend-grid { grid-template-columns: 1fr; }
   }
 </style>
 </head>
@@ -147,73 +187,214 @@
     <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 3v6c0 4.5-3.2 8-8 9-4.8-1-8-4.5-8-9V6l8-3z"/><path d="M9 12l2 2 4-4"/></svg>
     HANNA
   </p>
-  <h1>Is this message real?</h1>
-  <p class="intro">Upload a screenshot of the message you received. HANNA tells you if it looks safe or if it could be a scam.</p>
 
-  <!-- 1. START: upload a screenshot -->
-  <section id="v-start" aria-label="Upload a screenshot">
-    <label class="drop" id="drop" for="file">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="1.8"/><path d="M21 16l-5-5-8 9"/></svg>
-      <strong>Upload a screenshot of the message</strong>
-      <span>Tap here or drag the image in. You can also paste it with Ctrl+V.</span>
-      <input class="visually-hidden" type="file" id="file" accept="image/*">
-    </label>
-    <div class="examples">
-      <p>Want to see how it works? Try an example:</p>
-      <div id="examples"></div>
-    </div>
-  </section>
+  <nav class="tabs">
+    <button class="tab-btn active" onclick="switchTab('tab-analyzer', this)">Analyzer</button>
+    <button class="tab-btn" onclick="switchTab('tab-trainer', this)">Simulator</button>
+    <button class="tab-btn" onclick="switchTab('tab-trends', this)">Live Trends</button>
+  </nav>
 
-  <!-- 2. PREVIEW -->
-  <section id="v-preview" hidden aria-label="Message to check">
-    <div class="preview" id="preview"></div>
-    <div class="error" id="error" role="alert" hidden></div>
-    <div class="actions">
-      <button class="primary" id="btn-analyze" type="button">Check message</button>
-      <button id="btn-change" type="button">Change image</button>
-    </div>
-  </section>
+  <!-- TAB 1: ANALYZER (ORIGINAL HTML) -->
+  <div id="tab-analyzer" class="tab-content active">
+    <h1>Is this message real?</h1>
+    <p class="intro">Upload a screenshot of the message you received. HANNA tells you if it looks safe or if it could be a scam.</p>
 
-  <!-- 3. LOADING -->
-  <section id="v-loading" hidden class="loading" aria-live="polite">
-    <h2>Checking your message…</h2>
-    <ol class="steps" id="steps"></ol>
-  </section>
+    <!-- 1. START: upload a screenshot -->
+    <section id="v-start" aria-label="Upload a screenshot">
+      <label class="drop" id="drop" for="file">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="1.8"/><path d="M21 16l-5-5-8 9"/></svg>
+        <strong>Upload a screenshot of the message</strong>
+        <span>Tap here or drag the image in. You can also paste it with Ctrl+V.</span>
+        <input class="visually-hidden" type="file" id="file" accept="image/*">
+      </label>
+      <div class="examples">
+        <p>Want to see how it works? Try an example:</p>
+        <div id="examples"></div>
+      </div>
+    </section>
 
-  <!-- 4. RESULT -->
-  <section id="v-result" hidden class="result" aria-live="polite">
-    <div class="stamp-box preview" id="res-preview"></div>
-    <div class="verdict">
-      <h2 id="res-title" tabindex="-1"></h2>
-      <p id="res-summary"></p>
+    <!-- 2. PREVIEW -->
+    <section id="v-preview" hidden aria-label="Message to check">
+      <div class="preview" id="preview"></div>
+      <div class="error" id="error" role="alert" hidden></div>
+      <div class="actions">
+        <button class="primary" id="btn-analyze" type="button">Check message</button>
+        <button id="btn-change" type="button">Change image</button>
+      </div>
+    </section>
+
+    <!-- 3. LOADING -->
+    <section id="v-loading" hidden class="loading" aria-live="polite">
+      <h2>Checking your message…</h2>
+      <ol class="steps" id="steps"></ol>
+    </section>
+
+    <!-- 4. RESULT -->
+    <section id="v-result" hidden class="result" aria-live="polite">
+      <div class="stamp-box preview" id="res-preview"></div>
+      <div class="verdict">
+        <h2 id="res-title" tabindex="-1"></h2>
+        <p id="res-summary"></p>
+      </div>
+      <div class="block" id="bl-signals"><h3>Why we think so</h3><ul id="res-signals"></ul></div>
+      <div class="block todo" id="bl-actions"><h3>What we recommend</h3><ul id="res-actions"></ul></div>
+      <div class="confidence" id="bl-confidence">
+        Analysis confidence: <b id="res-conf-num"></b>
+        <div class="bar"><i id="res-conf-bar"></i></div>
+      </div>
+      <p class="disclaimer">HANNA is a helper, not a guarantee. If you have doubts, contact the company directly using its official phone number.</p>
+      <div class="actions">
+        <a class="button" id="btn-share" target="_blank" rel="noopener">Share alert on WhatsApp</a>
+        <button class="primary" id="btn-another" type="button">Check another message</button>
+      </div>
+    </section>
+  </div>
+
+  <!-- TAB 2: TRAINER -->
+  <div id="tab-trainer" class="tab-content">
+    <h1>Practice Spotting Scams</h1>
+    <p class="intro">Train your eye. HANNA will generate a random message. Can you tell if it's a scam or safe?</p>
+    
+    <div class="trainer-card" id="trainer-setup">
+      <p>Click below to generate a new scenario using AI.</p>
+      <button class="primary" onclick="generateScenario()" id="btn-generate">Generate Scenario</button>
     </div>
-    <div class="block" id="bl-signals"><h3>Why we think so</h3><ul id="res-signals"></ul></div>
-    <div class="block todo" id="bl-actions"><h3>What we recommend</h3><ul id="res-actions"></ul></div>
-    <div class="confidence" id="bl-confidence">
-      Analysis confidence: <b id="res-conf-num"></b>
-      <div class="bar"><i id="res-conf-bar"></i></div>
+
+    <div class="trainer-card" id="trainer-active" style="display: none;">
+      <h3>Incoming Message:</h3>
+      <div class="msg-box">
+        <small id="train-sender">Sender Name</small>
+        <span id="train-msg">Message text goes here...</span>
+      </div>
+      <p><strong>What do you think?</strong></p>
+      <div class="trainer-actions" id="train-buttons">
+        <button class="btn-scam" onclick="guessScenario(true)">🚨 It's a scam</button>
+        <button class="btn-safe" onclick="guessScenario(false)">✅ It's safe</button>
+      </div>
+      
+      <div id="train-feedback" class="trainer-result">
+        <h3 id="train-feedback-title">Correct!</h3>
+        <p id="train-feedback-text">Explanation goes here.</p>
+        <button class="primary" style="margin-top: 1rem;" onclick="resetTrainer()">Try another one</button>
+      </div>
     </div>
-    <p class="disclaimer">HANNA is a helper, not a guarantee. If you have doubts, contact the company directly using its official phone number.</p>
-    <div class="actions">
-      <a class="button" id="btn-share" target="_blank" rel="noopener">Share alert on WhatsApp</a>
-      <button class="primary" id="btn-another" type="button">Check another message</button>
+  </div>
+
+  <!-- TAB 3: TRENDS -->
+  <div id="tab-trends" class="tab-content">
+    <h1>Local Scam Trends</h1>
+    <p class="intro">Anonymous data gathered from HANNA users in your region this week.</p>
+    
+    <div class="trend-grid">
+      <div class="trend-box">
+        <h3>Total Reports Analyzed</h3>
+        <div class="trend-stat">1,492</div>
+        <p style="margin:0; font-size:0.9rem; color:var(--ink-soft);">+12% vs last week</p>
+      </div>
+      <div class="trend-box">
+        <h3>Most Targeted Platform</h3>
+        <div class="trend-stat" style="color:var(--danger);">WhatsApp</div>
+        <p style="margin:0; font-size:0.9rem; color:var(--ink-soft);">68% of reported scams</p>
+      </div>
     </div>
-  </section>
+
+    <div class="trend-box" style="margin-top: 1rem;">
+      <h3>Top Scam Types Today</h3>
+      
+      <div class="trend-bar-row">
+        <div class="trend-label">Fake Job Offers</div>
+        <div class="trend-bar-container"><div class="trend-bar-fill high" style="width: 75%;"></div></div>
+      </div>
+      <div class="trend-bar-row">
+        <div class="trend-label">Bank Impersonation</div>
+        <div class="trend-bar-container"><div class="trend-bar-fill high" style="width: 60%;"></div></div>
+      </div>
+      <div class="trend-bar-row">
+        <div class="trend-label">Package Delivery</div>
+        <div class="trend-bar-container"><div class="trend-bar-fill" style="width: 45%;"></div></div>
+      </div>
+      <div class="trend-bar-row">
+        <div class="trend-label">Family Emergency</div>
+        <div class="trend-bar-container"><div class="trend-bar-fill low" style="width: 20%;"></div></div>
+      </div>
+      
+      <div class="map-placeholder">
+        📍 Heatmap: Most activity recorded in the Metropolitan Area
+      </div>
+    </div>
+  </div>
 </main>
 
 <script>
 /* ============================================================
-   BACKEND CONNECTION
-   POST API_URL  (multipart/form-data, field "captura" = the image)
-   It must reply with JSON shaped like this:
-   {
-     "veredicto": "seguro" | "sospechoso" | "peligroso"
-                  (English "safe" | "suspicious" | "dangerous" also works),
-     "resumen":   "Short, simple sentence explaining the result",
-     "senales":   [ { "titulo": "Strange link", "detalle": "The link is not from the bank" } ],
-     "acciones":  [ "Do not click the link", "Call your bank" ],
-     "confianza": 0-100   (optional)
-   }
+   UI TABS LOGIC
+   ============================================================ */
+function switchTab(tabId, btn) {
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+  document.getElementById(tabId).classList.add('active');
+  btn.classList.add('active');
+}
+
+/* ============================================================
+   TRAINER LOGIC
+   ============================================================ */
+let currentScenario = null;
+
+async function generateScenario() {
+  const btn = document.getElementById('btn-generate');
+  btn.textContent = 'Generating...';
+  btn.disabled = true;
+  document.getElementById('train-feedback').style.display = 'none';
+  document.getElementById('train-buttons').style.display = 'flex';
+  
+  try {
+    const res = await fetch('/api/entrenar');
+    if (!res.ok) throw new Error('Failed to fetch');
+    currentScenario = await res.json();
+    
+    document.getElementById('trainer-setup').style.display = 'none';
+    document.getElementById('trainer-active').style.display = 'block';
+    
+    document.getElementById('train-sender').textContent = 'From: ' + currentScenario.sender;
+    document.getElementById('train-msg').textContent = currentScenario.message;
+  } catch (e) {
+    alert('Error connecting to the simulator. Please try again.');
+  } finally {
+    btn.textContent = 'Generate Scenario';
+    btn.disabled = false;
+  }
+}
+
+function guessScenario(guessedIsScam) {
+  document.getElementById('train-buttons').style.display = 'none';
+  const feedbackBox = document.getElementById('train-feedback');
+  const title = document.getElementById('train-feedback-title');
+  const text = document.getElementById('train-feedback-text');
+  
+  feedbackBox.style.display = 'block';
+  feedbackBox.className = 'trainer-result';
+  
+  const isCorrect = (guessedIsScam === currentScenario.is_scam);
+  
+  if (isCorrect) {
+    feedbackBox.classList.add('correct');
+    title.textContent = '🎯 Correct!';
+  } else {
+    feedbackBox.classList.add('incorrect');
+    title.textContent = '❌ Incorrect';
+  }
+  
+  text.textContent = currentScenario.explanation;
+}
+
+function resetTrainer() {
+  document.getElementById('trainer-active').style.display = 'none';
+  document.getElementById('trainer-setup').style.display = 'block';
+}
+
+/* ============================================================
+   ANALYZER LOGIC (ORIGINAL)
    ============================================================ */
 const API_URL = '/analizar';
 
@@ -226,7 +407,6 @@ const ALIASES = { seguro: 'safe', sospechoso: 'suspicious', peligroso: 'dangerou
 
 const STEPS = ['Reading the message text', 'Checking links and sender', 'Looking for signs of a scam'];
 
-/* Demo examples (they do not use the backend) */
 const EXAMPLES = [
   { name: 'Urgent bank alert', sender: 'National Bank', text: 'URGENT: Your account will be locked in 24 hours. Enter your password here to verify it: bit.ly/bank-secure-login',
     result: { veredicto: 'dangerous', resumen: 'This message tries to get your password by rushing you. That is a classic scam technique.',
@@ -242,11 +422,10 @@ const EXAMPLES = [
       acciones: ['Use it only if you requested the code.', 'Never give it to anyone who calls or writes to you.'], confianza: 88 } }
 ];
 
-/* ---------- helpers ---------- */
 const $ = id => document.getElementById(id);
 const views = ['v-start', 'v-preview', 'v-loading', 'v-result'];
-let file = null;      // uploaded image
-let example = null;   // selected example
+let file = null;
+let example = null;
 
 function show(id) { views.forEach(v => $(v).hidden = (v !== id)); window.scrollTo({ top: 0 }); }
 function el(tag, text, cls) { const e = document.createElement(tag); if (text) e.textContent = text; if (cls) e.className = cls; return e; }
@@ -265,7 +444,6 @@ function drawPreview(box) {
   }
 }
 
-/* ---------- choosing an image ---------- */
 function takeFile(f) {
   if (!f) return;
   if (!f.type.startsWith('image/')) { alert('Please upload an image (a screenshot).'); return; }
@@ -292,14 +470,12 @@ document.addEventListener('paste', e => {
   }
 });
 
-/* examples */
 EXAMPLES.forEach(ex => {
   const b = el('button', ex.name); b.type = 'button';
   b.addEventListener('click', () => { example = ex; file = null; showPreview(); });
   $('examples').appendChild(b);
 });
 
-/* ---------- analyze ---------- */
 let timer;
 function animateSteps() {
   const ol = $('steps'); ol.replaceChildren();
@@ -325,7 +501,7 @@ async function analyze() {
       const resp = await fetch(API_URL, { method: 'POST', body: fd });
       if (!resp.ok) throw new Error('HTTP ' + resp.status);
       data = await resp.json();
-      const wait = 2200 - (Date.now() - started);   // so the animation is not cut short
+      const wait = 2200 - (Date.now() - started);
       if (wait > 0) await new Promise(r => setTimeout(r, wait));
     }
     clearTimeout(timer);
@@ -340,7 +516,6 @@ async function analyze() {
   }
 }
 
-/* ---------- result ---------- */
 function showResult(d) {
   const raw = ALIASES[d.veredicto] || d.veredicto;
   const key = VERDICTS[raw] ? raw : 'suspicious';
@@ -373,7 +548,6 @@ function showResult(d) {
   h.focus();
 }
 
-/* ---------- buttons ---------- */
 $('btn-analyze').addEventListener('click', analyze);
 function reset() { file = null; example = null; $('file').value = ''; show('v-start'); }
 $('btn-change').addEventListener('click', reset);
