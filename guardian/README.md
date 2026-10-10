@@ -1,81 +1,56 @@
-# 🛡️ Guardián
+# HANNA - Your AI Cybersecurity Companion
 
-**ForgeHacks 2026 · Track Cybersecurity**
+**ForgeHacks 2026 · Cybersecurity Track**
 
-Guardián ayuda a adultos mayores de Perú a revisar mensajes, correos y páginas sospechosas. La persona sube una **captura de pantalla** y recibe un **semáforo** (🔴 peligro, 🟡 cuidado, 🟢 sin alertas), los **motivos** en lenguaje simple, una **analogía cotidiana**, los **pasos a seguir**, un botón para **escucharlo en voz alta** y otro para **avisar a su familia por WhatsApp**.
+HANNA helps you figure out if that weird text message, email, or website is actually a scam. You just upload a screenshot, and HANNA gives you a straight answer with an easy-to-read "stamp" (Safe, Suspicious, or Scam), explains why in plain English, and tells you what to do next.
 
-## Cómo funciona
+We also added two cool features for the hackathon: an **AI Simulator** to train your scam-spotting skills, and a **Live Trends** dashboard to see what's going on in your area.
+
+## Features (The 3 Tabs)
+
+1. **Analyzer (The Core):** 
+   You upload a screenshot. Our vision AI reads it, and our deterministic code (the "Magnifying Glass") checks things like suspicious domains, shorteners, and brand impersonation without actually clicking any bad links. Then, an LLM judge decides the final verdict.
+2. **Simulator (Trainer):**
+   Think you can spot a scam? HANNA generates a brand new, random text message using AI. You guess if it's legit or a scam, and HANNA tells you if you got it right (and why).
+3. **Live Trends:**
+   A clean dashboard showing what kind of scams are hitting your region the most. *(Note: For the hackathon demo, this uses mock data to show how community reporting would look).*
+
+## How it works under the hood
 
 ```mermaid
 flowchart LR
-  A[Captura] --> B["Ojos: IA de visión<br/>(lectura doble)"]
-  B --> C["Lupa: comprobaciones<br/>sin IA"]
-  C --> D["Juez: reglas + IA de texto"]
-  D --> E[Semáforo, motivos, pasos]
+  A[Screenshot] --> B["Eyes: Vision AI"]
+  B --> C["Magnifying Glass: Hardcoded checks"]
+  C --> D["Judge: Rules + Text AI"]
+  D --> E[Verdict, Reasons, Actions]
 ```
 
-1. **Ojos** (`app/api/analizar/route.js`): un modelo de visión transcribe la captura (tipo, marca, remitente, mensaje, enlaces).
-   - Los enlaces se leen **dos veces con preguntas distintas**; solo se confirman los que coinciden.
-   - En páginas web, la barra del navegador se recorta y se amplía (sharp) y se lee dos veces; se compara solo el dominio.
-   - Filtros de código descartan remitentes copiados del propio mensaje y "enlaces" que no son direcciones.
-2. **Lupa** (`lib/lupa.mjs`): código normal, sin IA. **Nunca visita el sitio sospechoso.**
-   - Expande enlaces acortados consultando solo al acortador (bit.ly, t.ly…), con bloqueo de direcciones internas.
-   - Separa el dominio real del subdominio (`appleid.987bf2.com` → `987bf2.com`).
-   - Compara con el sitio oficial de la marca que dice ser.
-   - Marca finales de dominio baratos (.top, .xyz…) como pista débil.
-   - Consulta la antigüedad del dominio por RDAP.
-3. **Juez** (`lib/juez.mjs`):
-   - **Reglas**: calculan un *piso* de riesgo a partir de hechos comprobados (marca falsa, dominio nuevo, urgencia, petición de claves, número extranjero…).
-   - **IA de texto**: redacta el veredicto en lenguaje simple. Puede **subir** el riesgo, pero **nunca bajarlo** por debajo del piso de reglas.
-   - Si todos los modelos fallan, se entrega el veredicto de reglas con textos de respaldo: la app siempre responde.
+- **Eyes (`lectura.mjs`):** We use `Qwen/Qwen3-VL-30B-A3B-Instruct` (via Featherless AI) to extract text, sender info, and URLs from the image. 
+- **Magnifying Glass (`lupa.mjs`):** Pure code, no AI hallucinations here. It checks if URLs are using shorteners (like bit.ly), separates the real domain from subdomains, and checks against a list of official brand sites.
+- **Judge (`juez.mjs`):** Combines hardcoded rules (like "new domain + asking for password = dangerous") with an LLM to explain the situation to the user in a friendly, human way.
 
-Modelos (vía Featherless AI), con cadena de respaldo:
-- Visión: `bakrianoo/arabic-legal-documents-ocr-1.0` → `autotrust/JEV-27B-VL`
-- Juez: `unsloth/Llama-3.3-70B-Instruct` → `RedHatAI/Llama-3.3-70B-Instruct` → `Qwen/Qwen3-14B` → reglas
+## How to run it locally
 
-## Ejecutar
+Grab your Featherless API key and let's go:
 
 ```bash
 npm install
-echo "FEATHERLESS_API_KEY=tu_clave" > .env.local
-npm run dev   # http://localhost:3000
+echo "FEATHERLESS_API_KEY=your_key_here" > .env.local
+npm run dev
 ```
+Then open `http://localhost:3000` and start testing!
 
-Probar lupa + juez sin visión:
+## Privacy First
 
-```bash
-node --env-file=.env.local scripts/probar-juez.mjs intrebonl.top/in/welc Interbank "Su cuenta fue bloqueada, active su token hoy" "+1 (972) 666-5699"
-```
+- We don't save your screenshots. They are analyzed and thrown away.
+- We never actually visit the suspicious links. We just do safe DNS/RDAP and shortener checks.
 
-## Privacidad
+## Known limitations
 
-- La captura se envía al servidor solo para este análisis y **no se guarda** (no hay base de datos).
-- La lupa **no abre** los enlaces sospechosos: solo consulta al acortador y al registro público de dominios.
-- El aviso a la familia lo envía la propia persona desde su WhatsApp; Guardián no guarda contactos.
+- **Screenshots:** If you screenshot a website but cut off the address bar, HANNA can't magically know the URL.
+- **Brands:** We only hardcoded a few major brands for the hackathon demo.
+- **AI Limits:** Sometimes free API models get busy or timeout, so we built a fallback system that relies purely on our hardcoded rules if the AI decides to take a nap.
 
-## Qué probamos (y qué falló)
+## Team
 
-Probamos la lectura con **7 capturas reales** de estafas (SMS, correo y página web):
-
-| Resultado | Casos |
-|---|---|
-| ✅ Lectura correcta (tipo, remitente y enlace) | 6 |
-| ⚠️ Límite | 1 (remitente "RAPPI" no reconocido) |
-
-Lupa + juez probados con: `intrebonl.top` (falso Interbank) → 🔴, `appleid.987bf2.com` (falso Apple) → 🔴, `www.interbank.pe` → 🟢.
-
-No afirmamos que funcione siempre: son los casos que probamos.
-
-## Límites conocidos
-
-- **Lectura**: capturas sin cabecera no muestran remitente; los botones sin dirección visible no aportan enlace; la barra del navegador suele cortar la ruta (por eso solo usamos el dominio).
-- **Marcas**: la lupa compara solo con las marcas de su lista (BCP, Interbank, Apple, SUNAT…). Si el mensaje dice ser de otra, lo dice y no adivina.
-- **Dominio real**: se calcula con una regla simple para finales comunes (.com.pe, .gob.pe, .co.uk), no con la Public Suffix List completa.
-- **Antigüedad**: depende de que el registro (RDAP) la publique; para .pe y .top a menudo no está disponible y la app lo dice.
-- **Acortadores**: si no muestran el destino, se declara como señal en lugar de ocultarlo.
-- **Disponibilidad de IA**: los modelos gratuitos a veces están saturados; por eso hay cadenas de respaldo y un veredicto por reglas.
-- Guardián es una ayuda, **no una garantía**: ante la duda, verifica siempre por otro canal.
-
-## Equipo
-
-2 integrantes · construido durante ForgeHacks 2026 (3–10 de octubre).
+Built during **ForgeHacks 2026** (October 3–10).
